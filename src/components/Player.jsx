@@ -1,37 +1,50 @@
 import { useState } from "react";
+
 export default function Player({
   initialName,
   symbol,
   isActive,
   onChangeName,
 }) {
-  //isEditing ? <input /> : <span className="player-name">{name}</span> alternative to the use of a variable
   const [playerName, setPlayerName] = useState(initialName);
   const [isEditing, setIsEditing] = useState(false);
 
   function handleEditClick() {
-    //setIsEditing(!isEditing); not recommended
-    setIsEditing((editing) => !isEditing);
-
     if (isEditing) {
-      onChangeName(symbol, playerName);
+      const trimmedName = playerName.trim() || initialName;
+      setPlayerName(trimmedName);
+      onChangeName(symbol, trimmedName);
     }
+    setIsEditing((editing) => !editing);
   }
 
   function handleChange(event) {
     setPlayerName(event.target.value);
   }
 
-  let editablePlayerName = <span className="player-name">{playerName}</span>;
-  if (isEditing) {
-    editablePlayerName = (
-      <input type="text" required value={playerName} onChange={handleChange} />
-    );
+  function handleKeyDown(event) {
+    if (event.key === "Enter") {
+      handleEditClick();
+    }
   }
+
   return (
     <li className={isActive ? "active" : undefined}>
       <span className="player">
-        {editablePlayerName}
+        {isEditing ? (
+          <input
+            type="text"
+            required
+            autoFocus
+            maxLength={20}
+            aria-label={`Name for player ${symbol}`}
+            value={playerName}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+          />
+        ) : (
+          <span className="player-name">{playerName}</span>
+        )}
         <span className="player-symbol">{symbol}</span>
       </span>
       <button onClick={handleEditClick}>{isEditing ? "Save" : "Edit"}</button>

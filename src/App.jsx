@@ -40,8 +40,6 @@ function deriveGameBoard(gameTurns) {
 }
 
 function deriveWinner(gameBoard, players) {
-  let winner;
-
   for (const combination of WINNING_COMBINATIONS) {
     const firstSquareSymbol =
       gameBoard[combination[0].row][combination[0].column];
@@ -55,10 +53,10 @@ function deriveWinner(gameBoard, players) {
       firstSquareSymbol === secondSquareSymbol &&
       firstSquareSymbol === thirdSquareSymbol
     ) {
-      winner = players[firstSquareSymbol];
+      return players[firstSquareSymbol];
     }
   }
-  return winner;
+  return null;
 }
 
 function App() {
@@ -70,9 +68,16 @@ function App() {
 
   const winner = deriveWinner(gameBoard, players);
   const hasDraw = gameTurns.length === 9 && !winner;
+  const isGameOver = Boolean(winner) || hasDraw;
 
   function handleSelectSquare(rowIndex, colIndex) {
     setGameTurns((prevTurns) => {
+      const board = deriveGameBoard(prevTurns);
+      // Ignore moves on occupied squares or after the game has ended.
+      if (board[rowIndex][colIndex] !== null || deriveWinner(board, players)) {
+        return prevTurns;
+      }
+
       const currentPlayer = deriveActivePlayer(prevTurns);
 
       const updatedTurns = [
@@ -112,10 +117,12 @@ function App() {
             onChangeName={handlePlayerNameChange}
           />
         </ol>
-        {(winner || hasDraw) && (
-          <GameOver winner={winner} onRestart={handleRestart} />
-        )}
-        <GameBoard onSelectSquare={handleSelectSquare} board={gameBoard} />
+        {isGameOver && <GameOver winner={winner} onRestart={handleRestart} />}
+        <GameBoard
+          onSelectSquare={handleSelectSquare}
+          board={gameBoard}
+          disabled={isGameOver}
+        />
       </div>
       <Log turns={gameTurns} />
     </main>
