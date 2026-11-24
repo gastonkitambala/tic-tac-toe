@@ -5,6 +5,7 @@ export default function Player({
   defaultName,
   symbol,
   isActive,
+  isComputer = false,
   onChangeName,
 }) {
   // Only holds a value while editing; the saved name lives in App.
@@ -44,7 +45,11 @@ export default function Player({
         )}
         <span className="player-symbol">{symbol}</span>
       </span>
-      <button onClick={handleEditClick}>{isEditing ? "Save" : "Edit"}</button>
+      {isComputer ? (
+        <span className="player-action-spacer" aria-hidden="true" />
+      ) : (
+        <button onClick={handleEditClick}>{isEditing ? "Save" : "Edit"}</button>
+      )}
     </li>
   );
 }
