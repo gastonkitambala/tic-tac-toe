@@ -1,40 +1,55 @@
 import { useState } from "react";
+
 export default function Player({
-  initialName,
+  name,
+  defaultName,
   symbol,
   isActive,
+  isComputer = false,
   onChangeName,
 }) {
-  //isEditing ? <input /> : <span className="player-name">{name}</span> alternative to the use of a variable
-  const [playerName, setPlayerName] = useState(initialName);
-  const [isEditing, setIsEditing] = useState(false);
+  // Only holds a value while editing; the saved name lives in App.
+  const [draftName, setDraftName] = useState(null);
+  const isEditing = draftName !== null;
 
   function handleEditClick() {
-    //setIsEditing(!isEditing); not recommended
-    setIsEditing((editing) => !isEditing);
-
     if (isEditing) {
-      onChangeName(symbol, playerName);
+      onChangeName(symbol, draftName.trim() || defaultName);
+      setDraftName(null);
+    } else {
+      setDraftName(name);
     }
   }
 
-  function handleChange(event) {
-    setPlayerName(event.target.value);
+  function handleKeyDown(event) {
+    if (event.key === "Enter") handleEditClick();
+    if (event.key === "Escape") setDraftName(null);
   }
 
-  let editablePlayerName = <span className="player-name">{playerName}</span>;
-  if (isEditing) {
-    editablePlayerName = (
-      <input type="text" required value={playerName} onChange={handleChange} />
-    );
-  }
   return (
     <li className={isActive ? "active" : undefined}>
       <span className="player">
-        {editablePlayerName}
+        {isEditing ? (
+          <input
+            type="text"
+            required
+            autoFocus
+            maxLength={20}
+            aria-label={`Name for player ${symbol}`}
+            value={draftName}
+            onChange={(event) => setDraftName(event.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+        ) : (
+          <span className="player-name">{name}</span>
+        )}
         <span className="player-symbol">{symbol}</span>
       </span>
-      <button onClick={handleEditClick}>{isEditing ? "Save" : "Edit"}</button>
+      {isComputer ? (
+        <span className="player-action-spacer" aria-hidden="true" />
+      ) : (
+        <button onClick={handleEditClick}>{isEditing ? "Save" : "Edit"}</button>
+      )}
     </li>
   );
 }
