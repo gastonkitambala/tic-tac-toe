@@ -88,3 +88,40 @@ export function getGameStatus(board) {
   if (getAvailableMoves(board).length === 0) return { state: "draw" };
   return { state: "playing" };
 }
+
+function isValidTurn(turn) {
+  return (
+    turn !== null &&
+    typeof turn === "object" &&
+    SYMBOLS.includes(turn.player) &&
+    turn.square !== null &&
+    typeof turn.square === "object" &&
+    Number.isInteger(turn.square.row) &&
+    Number.isInteger(turn.square.col)
+  );
+}
+
+/**
+ * Replays a newest-first turn history and checks that it could have been
+ * produced by a legal game: X moves first, players alternate, every square
+ * is in bounds and empty, and no move is made after a win.
+ * Used to reject corrupted or tampered saved games.
+ */
+export function isValidTurnHistory(turns, size = DEFAULT_SIZE) {
+  if (!Array.isArray(turns) || turns.length > size * size) return false;
+
+  const board = createEmptyBoard(size);
+  let expected = "X";
+
+  for (let i = turns.length - 1; i >= 0; i--) {
+    const turn = turns[i];
+    if (!isValidTurn(turn) || turn.player !== expected) return false;
+
+    const { row, col } = turn.square;
+    if (!isValidMove(board, row, col)) return false;
+
+    board[row][col] = turn.player;
+    expected = expected === "X" ? "O" : "X";
+  }
+  return true;
+}

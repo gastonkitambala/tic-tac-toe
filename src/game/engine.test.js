@@ -9,6 +9,7 @@ import {
   getAvailableMoves,
   getGameStatus,
   isValidMove,
+  isValidTurnHistory,
 } from "./engine";
 
 // Helper: build a board from a compact string like "XO.|.X.|..O"
@@ -181,5 +182,48 @@ describe("getGameStatus", () => {
 
   it("reports draws", () => {
     expect(getGameStatus(board("XOX|XOO|OXX"))).toEqual({ state: "draw" });
+  });
+});
+
+describe("isValidTurnHistory", () => {
+  const t = (row, col, player) => ({ square: { row, col }, player });
+
+  it("accepts an empty history", () => {
+    expect(isValidTurnHistory([])).toBe(true);
+  });
+
+  it("accepts a legal newest-first history", () => {
+    expect(isValidTurnHistory([t(1, 1, "O"), t(0, 0, "X")])).toBe(true);
+  });
+
+  it("accepts a history that ends in a win", () => {
+    const turns = [t(0, 2, "X"), t(1, 1, "O"), t(0, 1, "X"), t(1, 0, "O"), t(0, 0, "X")];
+    expect(isValidTurnHistory(turns)).toBe(true);
+  });
+
+  it("rejects non-arrays and malformed turns", () => {
+    expect(isValidTurnHistory(null)).toBe(false);
+    expect(isValidTurnHistory({})).toBe(false);
+    expect(isValidTurnHistory([{ player: "X" }])).toBe(false);
+    expect(isValidTurnHistory([t("0", 0, "X")])).toBe(false);
+    expect(isValidTurnHistory([t(0, 0, "Z")])).toBe(false);
+  });
+
+  it("rejects O moving first or a player moving twice", () => {
+    expect(isValidTurnHistory([t(0, 0, "O")])).toBe(false);
+    expect(isValidTurnHistory([t(1, 1, "X"), t(0, 0, "X")])).toBe(false);
+  });
+
+  it("rejects reused squares and out-of-bounds squares", () => {
+    expect(isValidTurnHistory([t(0, 0, "O"), t(0, 0, "X")])).toBe(false);
+    expect(isValidTurnHistory([t(3, 0, "X")])).toBe(false);
+  });
+
+  it("rejects moves made after the game was won", () => {
+    const turns = [
+      t(2, 2, "O"),
+      t(0, 2, "X"), t(1, 1, "O"), t(0, 1, "X"), t(1, 0, "O"), t(0, 0, "X"),
+    ];
+    expect(isValidTurnHistory(turns)).toBe(false);
   });
 });
