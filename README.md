@@ -4,7 +4,7 @@
 
 A React tic-tac-toe game with an unbeatable computer opponent, saved games and per-mode scoreboards.
 
-**Live demo:** _coming soon_
+**Live demo:** [tic-tac-toe-vert-six.vercel.app](https://tic-tac-toe-vert-six.vercel.app)
 
 <img src="docs/screenshot.png" alt="Game in progress against the unbeatable computer, with the scoreboard below the board" width="420">
 
